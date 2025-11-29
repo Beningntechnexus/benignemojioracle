@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
@@ -181,7 +182,13 @@ export default function Home() {
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="afterInteractive"
-        onReady={() => setIsTelegramReady(true)}
+        onLoad={() => {
+          // Add a small delay to ensure the Telegram SDK is fully initialized
+          // before we signal that it's ready, which might trigger other scripts.
+          setTimeout(() => {
+            setIsTelegramReady(true)
+          }, 100)
+        }}
       />
       <main className="flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
         <AnimatePresence mode="wait">
