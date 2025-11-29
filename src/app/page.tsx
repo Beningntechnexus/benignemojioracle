@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 declare global {
   interface Window {
     Telegram: any;
-    show_10252822: () => Promise<void>;
+    show_10252822?: () => Promise<void>;
   }
 }
 
@@ -27,20 +27,25 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [dailyStreak, setDailyStreak] = useState(0);
   const [isTelegramReady, setIsTelegramReady] = useState(false);
+  const [isInsideTelegram, setIsInsideTelegram] = useState(false);
   
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isTelegramReady) return;
+    // This effect runs once to determine the environment
+    const isTg = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
+    setIsInsideTelegram(isTg);
 
-    const { count } = getStreak();
-    setDailyStreak(count);
-    
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
+    if (isTg) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
+      const { count } = getStreak();
+      setDailyStreak(count);
     }
-  }, [isTelegramReady]);
+    
+    // We signal readiness for both environments
+    setIsTelegramReady(true);
+  }, []);
 
   const handleEmojiSelect = (emoji: string) => {
     setSelectedEmojis((prev) => {
@@ -107,6 +112,20 @@ export default function Home() {
   };
 
   const renderContent = () => {
+    if (!isTelegramReady) {
+       return (
+        <motion.div
+          key="loading"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="flex flex-col items-center justify-center text-center gap-4"
+        >
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </motion.div>
+      );
+    }
+
     if (isPending) {
       return (
         <motion.div
@@ -181,15 +200,18 @@ export default function Home() {
     <>
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
-        strategy="afterInteractive"
-        onLoad={() => {
-          // Add a small delay to ensure the Telegram SDK is fully initialized
-          // before we signal that it's ready, which might trigger other scripts.
-          setTimeout(() => {
-            setIsTelegramReady(true)
-          }, 100)
-        }}
+        strategy="beforeInteractive"
+        onLoad={() => setIsTelegramReady(true)}
       />
+      {/* Conditionally load the ad script only if not inside Telegram */}
+      {!isInsideTelegram && (
+        <Script
+          src='//libtl.com/sdk.js'
+          data-zone='10252822'
+          data-sdk='show_10252822'
+          strategy="lazyOnload"
+        />
+      )}
       <main className="flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
         <AnimatePresence mode="wait">
           {renderContent()}

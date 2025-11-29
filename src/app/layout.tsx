@@ -1,6 +1,5 @@
 import type {Metadata} from 'next';
 import { Toaster } from "@/components/ui/toaster"
-import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -23,12 +22,6 @@ export default function RootLayout({
       <body className="font-body antialiased">
         {children}
         <Toaster />
-        <Script
-          src='//libtl.com/sdk.js'
-          data-zone='10252822'
-          data-sdk='show_10252822'
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   );
