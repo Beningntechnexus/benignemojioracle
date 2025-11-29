@@ -32,7 +32,6 @@ export default function Home() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Determine if running inside Telegram
     const isTg = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
     setIsInsideTelegram(isTg);
 
@@ -41,11 +40,9 @@ export default function Home() {
       window.Telegram.WebApp.expand();
     }
     
-    // This now correctly sets the streak after determining the environment
     const { count } = getStreak();
     setDailyStreak(count);
 
-    // Signal that the check is complete
     setIsTelegramReady(true);
   }, []);
 
@@ -71,7 +68,6 @@ export default function Home() {
             const result = await generateEmojiFortune({ emojis: selectedEmojis });
             if (result.fortune) {
               setFortune(result.fortune);
-              // Update streak on successful generation, which also updates localStorage
               const { count } = getStreak();
               setDailyStreak(count);
             } else {
@@ -98,11 +94,9 @@ export default function Home() {
         generate();
       }).catch((err) => {
         console.error("Ad failed to show:", err);
-        // If ad fails, generate fortune anyway
         generate();
       });
     } else {
-      // Fallback if ad function is not available or inside Telegram
       generate();
     }
   };
@@ -204,7 +198,6 @@ export default function Home() {
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="beforeInteractive"
       />
-      {/* Conditionally load the ad script only if NOT inside Telegram, after the check is complete */}
       {isTelegramReady && !isInsideTelegram && (
         <Script
           src='//libtl.com/sdk.js'
