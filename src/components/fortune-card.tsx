@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { motion } from 'framer-motion';
 import { Share2, Star, Flame, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/hooks/use-toast"
 
@@ -19,20 +19,28 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
   const { toast } = useToast()
 
   const handleShare = () => {
-    const textToShare = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nFind your own fortune!`;
-    const url = 'https://t.me/YourBotName'; // TODO: Replace with your app/bot URL
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(textToShare)}`;
-    
-    if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.openTelegramLink(shareUrl);
-    } else {
-        window.open(shareUrl, '_blank');
+    try {
+      const textToShare = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nFind your own fortune!`;
+      const url = 'https://t.me/YourBotName'; // TODO: Replace with your app/bot URL
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(textToShare)}`;
+      
+      if (window.Telegram && window.Telegram.WebApp) {
+          window.Telegram.WebApp.openTelegramLink(shareUrl);
+      } else {
+          window.open(shareUrl, '_blank');
+      }
+    } catch (error) {
+      console.error("Telegram share failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Share Failed",
+        description: "Could not open Telegram share link.",
+      });
     }
   };
 
   const handleCopy = () => {
-    const textToCopy = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"`;
-    navigator.clipboard.writeText(textToCopy);
+    navigator.clipboard.writeText(`My Emoji Fortune (${emojis.join(' ')}): "${fortune}"`);
     toast({
       title: "Copied to clipboard!",
       description: "Your fortune is ready to be shared.",
@@ -40,12 +48,21 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
   }
   
   const handleTip = () => {
-    // This is a placeholder for Telegram Stars integration.
-    // A monitoring tool will detect clicks on this button to enable future implementation.
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.showAlert('Telegram Stars integration is coming soon!');
-    } else {
-      alert('Telegram Stars integration is coming soon!');
+    try {
+      if (window.Telegram && window.Telegram.WebApp) {
+        // Use showPopup for wider compatibility, as showAlert is for v6.2+
+        window.Telegram.WebApp.showPopup({
+            title: 'Coming Soon',
+            message: 'Telegram Stars integration is on its way!',
+            buttons: [{ type: 'ok', text: 'OK' }]
+        });
+      } else {
+        alert('Telegram Stars integration is coming soon!');
+      }
+    } catch (error) {
+        console.error("Telegram popup failed:", error);
+        // Fallback for very old clients or unexpected errors
+        alert('Telegram Stars integration is coming soon!');
     }
   };
 
