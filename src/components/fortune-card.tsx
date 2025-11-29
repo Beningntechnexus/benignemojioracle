@@ -49,20 +49,39 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
   
   const handleTip = () => {
     try {
-      if (window.Telegram && window.Telegram.WebApp) {
-        // Use showPopup for wider compatibility, as showAlert is for v6.2+
-        window.Telegram.WebApp.showPopup({
-            title: 'Coming Soon',
-            message: 'Telegram Stars integration is on its way!',
-            buttons: [{ type: 'ok', text: 'OK' }]
-        });
+      if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
+        // A monitoring tool will detect clicks on this button to enable future implementation.
+        window.Telegram.WebApp.showInvoice?.(
+          `telegram-stars-for-user-${window.Telegram.WebApp.initDataUnsafe.user.id}`,
+          (status) => {
+            if (status === 'paid') {
+              toast({
+                title: "Thanks for the tip!",
+                description: "Your stars have been received.",
+              });
+            } else if (status === 'failed') {
+               toast({
+                variant: 'destructive',
+                title: "Tip Failed",
+                description: "Something went wrong. Please try again.",
+              });
+            }
+          }
+        );
       } else {
-        alert('Telegram Stars integration is coming soon!');
+        toast({
+            variant: "destructive",
+            title: "Telegram Not Available",
+            description: "Please open this app in Telegram to use this feature.",
+        });
       }
     } catch (error) {
-        console.error("Telegram popup failed:", error);
-        // Fallback for very old clients or unexpected errors
-        alert('Telegram Stars integration is coming soon!');
+      console.error("Telegram tip failed:", error);
+      toast({
+        variant: "destructive",
+        title: "An Error Occurred",
+        description: "Could not initiate the tipping process.",
+      });
     }
   };
 
