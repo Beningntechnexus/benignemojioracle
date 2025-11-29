@@ -27,16 +27,12 @@ export default function Home() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // We need to check for window existence for server components
-    if (typeof window !== 'undefined') {
-      const { count } = getStreak();
-      setDailyStreak(count);
-      
-      // Initialize Telegram Web App
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.ready();
-        window.Telegram.WebApp.expand();
-      }
+    const { count } = getStreak();
+    setDailyStreak(count);
+    
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.ready();
+      window.Telegram.WebApp.expand();
     }
   }, []);
 
