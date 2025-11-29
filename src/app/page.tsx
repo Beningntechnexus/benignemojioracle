@@ -32,6 +32,7 @@ export default function Home() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Determine if running inside Telegram
     const isTg = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
     setIsInsideTelegram(isTg);
 
@@ -44,6 +45,7 @@ export default function Home() {
     const { count } = getStreak();
     setDailyStreak(count);
 
+    // Signal that the check is complete
     setIsTelegramReady(true);
   }, []);
 
@@ -87,7 +89,7 @@ export default function Home() {
         });
     }
 
-    if (typeof window.show_10252822 === 'function') {
+    if (typeof window.show_10252822 === 'function' && !isInsideTelegram) {
       window.show_10252822().then(() => {
         toast({
           title: "Ad Watched!",
@@ -100,7 +102,7 @@ export default function Home() {
         generate();
       });
     } else {
-      // Fallback if ad function is not available
+      // Fallback if ad function is not available or inside Telegram
       generate();
     }
   };
@@ -201,9 +203,8 @@ export default function Home() {
       <Script
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="beforeInteractive"
-        onLoad={() => setIsTelegramReady(true)}
       />
-      {/* Conditionally load the ad script only if not inside Telegram */}
+      {/* Conditionally load the ad script only if NOT inside Telegram, after the check is complete */}
       {isTelegramReady && !isInsideTelegram && (
         <Script
           src='//libtl.com/sdk.js'
