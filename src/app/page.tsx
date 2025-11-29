@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 declare global {
   interface Window {
     Telegram: any;
+    show_10252822: () => Promise<void>;
   }
 }
 
@@ -55,27 +56,47 @@ export default function Home() {
   const handleGenerateFortune = () => {
     if (selectedEmojis.length === 0) return;
     setError(null);
-    startTransition(async () => {
-      try {
-        const result = await generateEmojiFortune({ emojis: selectedEmojis });
-        if (result.fortune) {
-          setFortune(result.fortune);
-          // Update streak on successful generation, which also updates localStorage
-          const { count } = getStreak();
-          setDailyStreak(count);
-        } else {
-          throw new Error("The spirits are quiet. Please try again.");
-        }
-      } catch (e) {
-        const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
-        setError(errorMessage);
+    
+    const generate = () => {
+        startTransition(async () => {
+          try {
+            const result = await generateEmojiFortune({ emojis: selectedEmojis });
+            if (result.fortune) {
+              setFortune(result.fortune);
+              // Update streak on successful generation, which also updates localStorage
+              const { count } = getStreak();
+              setDailyStreak(count);
+            } else {
+              throw new Error("The spirits are quiet. Please try again.");
+            }
+          } catch (e) {
+            const errorMessage = e instanceof Error ? e.message : "An unknown error occurred.";
+            setError(errorMessage);
+            toast({
+              variant: "destructive",
+              title: "Fortune Telling Failed",
+              description: errorMessage,
+            })
+          }
+        });
+    }
+
+    if (typeof window.show_10252822 === 'function') {
+      window.show_10252822().then(() => {
         toast({
-          variant: "destructive",
-          title: "Fortune Telling Failed",
-          description: errorMessage,
-        })
-      }
-    });
+          title: "Ad Watched!",
+          description: "Your reward is on its way!",
+        });
+        generate();
+      }).catch((err) => {
+        console.error("Ad failed to show:", err);
+        // If ad fails, generate fortune anyway
+        generate();
+      });
+    } else {
+      // Fallback if ad function is not available
+      generate();
+    }
   };
 
   const handleReset = () => {
