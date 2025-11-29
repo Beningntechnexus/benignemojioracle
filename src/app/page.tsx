@@ -32,18 +32,18 @@ export default function Home() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // This effect runs once to determine the environment
     const isTg = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
     setIsInsideTelegram(isTg);
 
     if (isTg) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
-      const { count } = getStreak();
-      setDailyStreak(count);
     }
     
-    // We signal readiness for both environments
+    // This now correctly sets the streak after determining the environment
+    const { count } = getStreak();
+    setDailyStreak(count);
+
     setIsTelegramReady(true);
   }, []);
 
@@ -204,7 +204,7 @@ export default function Home() {
         onLoad={() => setIsTelegramReady(true)}
       />
       {/* Conditionally load the ad script only if not inside Telegram */}
-      {!isInsideTelegram && (
+      {isTelegramReady && !isInsideTelegram && (
         <Script
           src='//libtl.com/sdk.js'
           data-zone='10252822'
