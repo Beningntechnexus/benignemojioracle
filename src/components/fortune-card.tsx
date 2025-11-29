@@ -18,11 +18,12 @@ interface FortuneCardProps {
 const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset }) => {
   const { toast } = useToast()
 
+  const shareText = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nJoin the channel for more mystical fun: https://t.me/benignemojioracle`;
+
   const handleShare = () => {
     try {
-      const textToShare = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nFind your own fortune!`;
       const url = 'https://t.me/MagicalA_bot';
-      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(textToShare)}`;
+      const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(shareText)}`;
       
       if (window.Telegram && window.Telegram.WebApp) {
           window.Telegram.WebApp.openTelegramLink(shareUrl);
@@ -40,7 +41,7 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`My Emoji Fortune (${emojis.join(' ')}): "${fortune}"`);
+    navigator.clipboard.writeText(shareText);
     toast({
       title: "Copied to clipboard!",
       description: "Your fortune is ready to be shared.",
