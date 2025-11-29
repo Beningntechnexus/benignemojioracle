@@ -15,7 +15,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <script src="https://telegram.org/js/telegram-web-app.js" async></script>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400..900&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />

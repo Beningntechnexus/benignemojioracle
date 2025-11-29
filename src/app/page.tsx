@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Loader2 } from 'lucide-react';
+import Script from 'next/script';
 
 import { Button } from '@/components/ui/button';
 import EmojiPicker from '@/components/emoji-picker';
@@ -23,10 +24,13 @@ export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [dailyStreak, setDailyStreak] = useState(0);
+  const [isTelegramReady, setIsTelegramReady] = useState(false);
   
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!isTelegramReady) return;
+
     const { count } = getStreak();
     setDailyStreak(count);
     
@@ -34,7 +38,7 @@ export default function Home() {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
     }
-  }, []);
+  }, [isTelegramReady]);
 
   const handleEmojiSelect = (emoji: string) => {
     setSelectedEmojis((prev) => {
@@ -152,10 +156,17 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
-      <AnimatePresence mode="wait">
-        {renderContent()}
-      </AnimatePresence>
-    </main>
+    <>
+      <Script
+        src="https://telegram.org/js/telegram-web-app.js"
+        strategy="afterInteractive"
+        onReady={() => setIsTelegramReady(true)}
+      />
+      <main className="flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
+        <AnimatePresence mode="wait">
+          {renderContent()}
+        </AnimatePresence>
+      </main>
+    </>
   );
 }
