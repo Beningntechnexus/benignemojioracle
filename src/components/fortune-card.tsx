@@ -21,7 +21,7 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
   const handleShare = () => {
     try {
       const textToShare = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nFind your own fortune!`;
-      const url = 'https://t.me/YourBotName'; // TODO: Replace with your app/bot URL
+      const url = 'https://t.me/MagicalA_bot';
       const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(textToShare)}`;
       
       if (window.Telegram && window.Telegram.WebApp) {
@@ -50,13 +50,17 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
   const handleTip = () => {
     try {
       if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
-        window.Telegram.WebApp.showInvoice?.(
-          `telegram-stars-for-user-${window.Telegram.WebApp.initDataUnsafe.user.id}`,
+        // The invoice payload format is: telegram-stars-for-user-<user_id>
+        // The invoice must be created by the bot before it can be shown.
+        // For this example, we'll create a placeholder invoice.
+        const invoiceSlug = `tip-1-star-for-${window.Telegram.WebApp.initDataUnsafe.user.id}`;
+        window.Telegram.WebApp.showInvoice(
+          invoiceSlug,
           (status: 'paid' | 'cancelled' | 'failed' | 'pending') => {
             if (status === 'paid') {
               toast({
                 title: "Thanks for the tip!",
-                description: "Your stars have been received.",
+                description: "Your star has been received.",
               });
             } else if (status === 'failed') {
                toast({
@@ -83,6 +87,7 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
       });
     }
   };
+
 
   return (
     <motion.div
@@ -117,12 +122,12 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
                   <Copy className="mr-2" /> Copy
                 </Button>
               </div>
-              <Button onClick={handleTip} variant="outline" className="w-full border-amber-400/50 text-amber-400 hover:bg-amber-400/10 hover:text-amber-300">
-                <Star className="mr-2" /> Tip with Stars
-              </Button>
               <Button onClick={onReset} variant="ghost" className="w-full text-muted-foreground hover:text-foreground">
                 <RotateCcw className="mr-2" />
                 Try Again
+              </Button>
+              <Button onClick={handleTip} variant="outline" className="w-full border-amber-400/50 text-amber-400 hover:bg-amber-400/10 hover:text-amber-300">
+                <Star className="mr-2" /> Tip with Stars
               </Button>
             </div>
           </CardContent>
