@@ -18,7 +18,7 @@ interface FortuneCardProps {
 const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset }) => {
   const { toast } = useToast()
 
-  const shareText = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nJoin the channel for more mystical fun: https://t.me/benignemojioracle`;
+  const shareText = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nFind your own fortune: @MagicalA_bot\nJoin the channel for more mystical fun: https://t.me/benignemojioracle`;
 
   const handleShare = () => {
     try {

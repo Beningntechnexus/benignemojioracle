@@ -34,7 +34,7 @@ export default function Home() {
     const { count } = getStreak();
     setDailyStreak(count);
     
-    if (window.Telegram && window.Telegram.WebApp) {
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
     }
