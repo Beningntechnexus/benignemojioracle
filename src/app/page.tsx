@@ -26,7 +26,6 @@ export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [dailyStreak, setDailyStreak] = useState(0);
-  const [isTelegramReady, setIsTelegramReady] = useState(false);
   const [isInsideTelegram, setIsInsideTelegram] = useState(false);
   
   const { toast } = useToast();
@@ -38,12 +37,24 @@ export default function Home() {
     if (isTg) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
+    } else {
+      // Manually inject the ad script only if not in Telegram
+      const script = document.createElement('script');
+      script.src = '//libtl.com/sdk.js';
+      script.setAttribute('data-zone', '10252822');
+      script.setAttribute('data-sdk', 'show_10252822');
+      script.async = true;
+      document.body.appendChild(script);
+
+      return () => {
+        // Cleanup the script when the component unmounts
+        document.body.removeChild(script);
+      }
     }
     
     const { count } = getStreak();
     setDailyStreak(count);
 
-    setIsTelegramReady(true);
   }, []);
 
   const handleEmojiSelect = (emoji: string) => {
@@ -108,20 +119,6 @@ export default function Home() {
   };
 
   const renderContent = () => {
-    if (!isTelegramReady) {
-       return (
-        <motion.div
-          key="loading"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="flex flex-col items-center justify-center text-center gap-4"
-        >
-          <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </motion.div>
-      );
-    }
-
     if (isPending) {
       return (
         <motion.div
@@ -198,14 +195,6 @@ export default function Home() {
         src="https://telegram.org/js/telegram-web-app.js"
         strategy="beforeInteractive"
       />
-      {isTelegramReady && !isInsideTelegram && (
-        <Script
-          src='//libtl.com/sdk.js'
-          data-zone='10252822'
-          data-sdk='show_10252822'
-          strategy="lazyOnload"
-        />
-      )}
       <main className="flex flex-col items-center justify-center min-h-screen p-4 overflow-hidden">
         <AnimatePresence mode="wait">
           {renderContent()}
