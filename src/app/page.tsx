@@ -37,24 +37,25 @@ export default function Home() {
     if (isTg) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
-    } else {
-      // Manually inject the ad script only if not in Telegram
-      const script = document.createElement('script');
-      script.src = '//libtl.com/sdk.js';
-      script.setAttribute('data-zone', '10252822');
-      script.setAttribute('data-sdk', 'show_10252822');
-      script.async = true;
-      document.body.appendChild(script);
-
-      return () => {
-        // Cleanup the script when the component unmounts
-        document.body.removeChild(script);
-      }
     }
     
+    // Manually inject the ad script
+    const script = document.createElement('script');
+    script.src = '//libtl.com/sdk.js';
+    script.setAttribute('data-zone', '10252822');
+    script.setAttribute('data-sdk', 'show_10252822');
+    script.async = true;
+    document.body.appendChild(script);
+
     const { count } = getStreak();
     setDailyStreak(count);
 
+    return () => {
+      // Cleanup the script when the component unmounts
+      if (script.parentNode) {
+          document.body.removeChild(script);
+      }
+    }
   }, []);
 
   const handleEmojiSelect = (emoji: string) => {
@@ -96,7 +97,7 @@ export default function Home() {
         });
     }
 
-    if (typeof window.show_10252822 === 'function' && !isInsideTelegram) {
+    if (typeof window.show_10252822 === 'function') {
       window.show_10252822().then(() => {
         toast({
           title: "Ad Watched!",
