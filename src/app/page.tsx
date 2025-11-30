@@ -26,15 +26,11 @@ export default function Home() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [dailyStreak, setDailyStreak] = useState(0);
-  const [isInsideTelegram, setIsInsideTelegram] = useState(false);
   
   const { toast } = useToast();
 
   useEffect(() => {
-    const isTg = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData);
-    setIsInsideTelegram(isTg);
-
-    if (isTg) {
+    if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.ready();
       window.Telegram.WebApp.expand();
     }
