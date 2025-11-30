@@ -1,12 +1,15 @@
 'use client';
 
 import type { FC } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Share2, Star, Flame, Copy, RotateCcw } from 'lucide-react';
+import { Share2, Star, Flame, Copy, RotateCcw, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from "@/hooks/use-toast"
+import { createInvoiceLink } from '@/ai/flows/create-invoice-link';
+
 
 interface FortuneCardProps {
   emojis: string[];
@@ -17,6 +20,7 @@ interface FortuneCardProps {
 
 const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset }) => {
   const { toast } = useToast()
+  const [isTipping, setIsTipping] = useState(false);
 
   const shareText = `My Emoji Fortune (${emojis.join(' ')}): "${fortune}"\n\nFind your own fortune: @MagicalA_bot\nJoin the channel for more mystical fun: https://t.me/benignemojioracle`;
 
@@ -48,16 +52,16 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
     });
   }
   
-  const handleTip = () => {
+  const handleTip = async () => {
+    setIsTipping(true);
     try {
       if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe?.user) {
-        // The invoice payload format is: telegram-stars-for-user-<user_id>
-        // The invoice must be created by the bot before it can be shown.
-        // For this example, we'll create a placeholder invoice.
-        const invoiceSlug = `tip-1-star-for-${window.Telegram.WebApp.initDataUnsafe.user.id}`;
-        window.Telegram.WebApp.showInvoice(
-          invoiceSlug,
-          (status: 'paid' | 'cancelled' | 'failed' | 'pending') => {
+        const userId = window.Telegram.WebApp.initDataUnsafe.user.id;
+        
+        const { invoiceUrl } = await createInvoiceLink({ userId });
+
+        if (invoiceUrl) {
+          window.Telegram.WebApp.openInvoice(invoiceUrl, (status: 'paid' | 'cancelled' | 'failed' | 'pending') => {
             if (status === 'paid') {
               toast({
                 title: "Thanks for the tip!",
@@ -70,8 +74,11 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
                 description: "Something went wrong. Please try again.",
               });
             }
-          }
-        );
+          });
+        } else {
+            throw new Error("Could not generate an invoice link.");
+        }
+
       } else {
         toast({
             variant: "destructive",
@@ -81,11 +88,14 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
       }
     } catch (error) {
       console.error("Telegram tip failed:", error);
+      const errorMessage = error instanceof Error ? error.message : "Could not initiate the tipping process.";
       toast({
         variant: "destructive",
         title: "An Error Occurred",
-        description: "Could not initiate the tipping process.",
+        description: errorMessage,
       });
+    } finally {
+        setIsTipping(false);
     }
   };
 
@@ -127,8 +137,9 @@ const FortuneCard: FC<FortuneCardProps> = ({ emojis, fortune, streak, onReset })
                 <RotateCcw className="mr-2" />
                 Try Again
               </Button>
-              <Button onClick={handleTip} variant="outline" className="w-full border-amber-400/50 text-amber-400 hover:bg-amber-400/10 hover:text-amber-300">
-                <Star className="mr-2" /> Tip with Stars
+              <Button onClick={handleTip} variant="outline" className="w-full border-amber-400/50 text-amber-400 hover:bg-amber-400/10 hover:text-amber-300" disabled={isTipping}>
+                {isTipping ? <Loader2 className="mr-2 animate-spin" /> : <Star className="mr-2" />}
+                Tip with Stars
               </Button>
             </div>
           </CardContent>
